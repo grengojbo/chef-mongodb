@@ -154,3 +154,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+A simple web-based Administration and Management Tool for MongoDB
+https://github.com/Imaginea/mViewer
+http://www.youtube.com/watch?v=PbgNtvjc3Ug
+
+mkdir -p /opt/mongodb_gui && cd /opt/mongodb_gui
+wget https://github.com/downloads/Imaginea/mViewer/mViewer-v0.9.1.tar.gz
+tar -xzvf ./mViewer-v0.9.1.tar.gz
+./start_mViewer.sh

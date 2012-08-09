@@ -23,11 +23,11 @@
 # http://www.mongodb.org/downloads#packages
 
 case node['platform']
-when "debian", "ubuntu"
-  # Adds the repo: http://www.mongodb.org/display/DOCS/Ubuntu+and+Debian+packages
-  execute "apt-get update" do
-    action :nothing
-  end
+  when "debian", "ubuntu"
+    # Adds the repo: http://www.mongodb.org/display/DOCS/Ubuntu+and+Debian+packages
+    execute "apt-get update" do
+      action :nothing
+   end
 
   apt_repository "10gen" do
     uri "http://downloads-distro.mongodb.org/repo/debian-sysvinit"
@@ -39,9 +39,27 @@ when "debian", "ubuntu"
     notifies :run, "execute[apt-get update]", :immediately
   end
 
-  package "mongodb" do
-    package_name "mongodb-10gen"
-  end
+    package "mongodb" do
+      package_name "mongodb-10gen"
+    end
+  when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+      arch = node["kernel"]["machine"]
+      arch = "i386" unless arch == "x86_64"
+      #/etc/yum.repos.d/10gen.repo
+      #http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
+
+      rpm_file = "percona-release-0.0-1.#{arch}.rpm"
+
+      remote_file "/var/tmp/#{rpm_file}" do
+        source "http://www.percona.com/downloads/percona-release/#{rpm_file}"
+        owner  "root"
+        mode   0644
+      end
+
+      package "mongo-10gen mongo-10gen-server" do
+        source "/var/tmp/#{rpm_file}"
+        options "--nogpgcheck"
+      end
 else
     Chef::Log.warn("Adding the #{node['platform']} 10gen repository is not yet not supported by this cookbook")
 end
