@@ -26,6 +26,12 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     
   include_recipe "mongodb::default"
   
+  case node['platform']
+    when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+      if params[:name] == "mongodb"
+        params[:name] == "mongod"
+      end
+  end
   name = params[:name]
   type = params[:mongodb_type]
   service_action = params[:action]
@@ -107,8 +113,8 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
   
   # log dir [make sure it exists]
   directory logpath do
-    owner "mongodb"
-    group "mongodb"
+    owner node['mongodb']['user']
+    group node['mongodb']['group']
     mode "0755"
     action :create
     recursive true
@@ -117,8 +123,8 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
   if type != "mongos"
     # dbpath dir [make sure it exists]
     directory dbpath do
-      owner "mongodb"
-      group "mongodb"
+      owner node['mongodb']['user']
+      group node['mongodb']['group']
       mode "0755"
       action :create
       recursive true
@@ -147,7 +153,7 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     if type == "mongos"
       notifies :create, "ruby_block[config_sharding]", :immediately
     end
-    if name == "mongodb"
+    if name == "mongodb" or name == "mongod"
       # we don't care about a running mongodb service in these cases, all we need is stopping it
       ignore_failure true
     end

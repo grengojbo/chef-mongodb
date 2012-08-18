@@ -28,8 +28,6 @@ case node['platform']
     #  perl-MongoDB pymongo python-asyncmongo
     package "mongo-10gen" do
       action :update
-      #source "/var/tmp/#{rpm_file}"
-      #options "--nogpgcheck"
     end
 end
 
