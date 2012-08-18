@@ -27,7 +27,7 @@ case node['platform']
   when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
     #  perl-MongoDB pymongo python-asyncmongo
     package "mongo-10gen mongo-10gen-server" do
-      action :update
+      action :upgrade
       #source "/var/tmp/#{rpm_file}"
       #options "--nogpgcheck"
     end
