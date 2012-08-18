@@ -88,29 +88,54 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     configserver = configserver_nodes.collect{|n| "#{n['fqdn']}:#{n['mongodb']['port']}" }.join(",")
   end
   
-  # default file
-  template "#{node['mongodb']['defaults_dir']}/#{name}" do
-    action :create
-    source "mongodb.default.erb"
-    group node['mongodb']['root_group']
-    owner "root"
-    mode "0644"
-    variables(
-      "daemon_path" => daemon,
-      "name" => name,
-      "config" => configfile,
-      "configdb" => configserver,
-      "port" => port,
-      "logpath" => logfile,
-      "dbpath" => dbpath,
-      "replicaset_name" => replicaset_name,
-      "configsrv" => false, #type == "configserver", this might change the port
-      "shardsrv" => false,  #type == "shard", dito.
-      "enable_rest" => params[:enable_rest]
-    )
-    notifies :restart, "service[#{name}]"
+  case node['platform']
+    when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+      # init script
+      template "#{node['mongodb']['init_dir']}/#{name}" do
+        action :create
+        source "mongodb.init.erb"
+        group node['mongodb']['root_group']
+        owner "root"
+        mode "0755"
+        variables :provides => name
+        notifies :restart, "service[#{name}]"
+      end
+    else
+      # default file
+    template "#{node['mongodb']['defaults_dir']}/#{name}" do
+      action :create
+      source "mongodb.default.erb"
+      group node['mongodb']['root_group']
+      owner "root"
+      mode "0644"
+      variables(
+        "daemon_path" => daemon,
+        "name" => name,
+        "config" => configfile,
+        "configdb" => configserver,
+        "port" => port,
+        "logpath" => logfile,
+        "dbpath" => dbpath,
+        "replicaset_name" => replicaset_name,
+        "configsrv" => false, #type == "configserver", this might change the port
+        "shardsrv" => false,  #type == "shard", dito.
+        "enable_rest" => params[:enable_rest]
+      )
+      notifies :restart, "service[#{name}]"
+    end
+
+      # init script
+      template "#{node['mongodb']['init_dir']}/#{name}" do
+        action :create
+        source "mongodb.init.erb"
+        group node['mongodb']['root_group']
+        owner "root"
+        mode "0755"
+        variables :provides => name
+        notifies :restart, "service[#{name}]"
+      end
+
   end
-  
   # log dir [make sure it exists]
   directory logpath do
     owner node['mongodb']['user']
@@ -130,18 +155,7 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
       recursive true
     end
   end
-  
-  # init script
-  template "#{node['mongodb']['init_dir']}/#{name}" do
-    action :create
-    source "mongodb.init.erb"
-    group node['mongodb']['root_group']
-    owner "root"
-    mode "0755"
-    variables :provides => name
-    notifies :restart, "service[#{name}]"
-  end
-  
+
   # service
   service name do
     supports :status => true, :restart => true
