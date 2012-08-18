@@ -19,8 +19,18 @@
 # limitations under the License.
 #
 
-package "mongodb" do
-  action :install
+case node['platform']
+  when "debian", "ubuntu"
+    package "mongodb" do
+      action :install
+    end
+  when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+    #  perl-MongoDB pymongo python-asyncmongo
+    package "mongo-10gen mongo-10gen-server" do
+      action :update
+      #source "/var/tmp/#{rpm_file}"
+      #options "--nogpgcheck"
+    end
 end
 
 needs_mongo_gem = (node.recipes.include?("mongodb::replicaset") or node.recipes.include?("mongodb::mongos"))
