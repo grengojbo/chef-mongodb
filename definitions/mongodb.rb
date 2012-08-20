@@ -99,8 +99,8 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
         mode "0644"
         variables(
                   "port" => port,
-                  "logpath" => node['mongodb']['logpath'],
-                  "dbpath" => node['mongodb']['dbpath']
+                  "logpath" => logpath,
+                  "dbpath" => dbpath
                 )
         notifies :restart, "service[#{name}]"
       end

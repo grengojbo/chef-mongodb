@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-default[:mongodb][:dbpath] = "/var/lib/mongodb"
-default[:mongodb][:logpath] = "/var/log/mongodb"
 default[:mongodb][:port] = 27017
 
 # cluster identifier
@@ -34,6 +32,8 @@ when "freebsd"
   default[:mongodb][:defaults_dir] = "/etc/rc.conf.d"
   default[:mongodb][:init_dir] = "/usr/local/etc/rc.d"
   default[:mongodb][:root_group] = "wheel"
+  default[:mongodb][:dbpath] = "/var/lib/mongodb"
+  default[:mongodb][:logpath] = "/var/log/mongodb"
 when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
   default[:mongodb][:defaults_dir] = "/etc/default"
   default[:mongodb][:init_dir] = "/etc/init.d"
@@ -48,4 +48,6 @@ else
   default[:mongodb][:root_group] = "root"
   default[:mongodb][:user] = "mongodb"
   default[:mongodb][:group] = "mongodb"
+  default[:mongodb][:dbpath] = "/var/lib/mongodb"
+  default[:mongodb][:logpath] = "/var/log/mongodb"
 end
