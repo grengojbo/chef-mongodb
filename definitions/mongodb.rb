@@ -26,6 +26,12 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     
   include_recipe "mongodb::default"
   
+  case node['platform']
+    when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+      if params[:name] == "mongodb"
+        params[:name] == "mongod"
+      end
+  end
   name = params[:name]
   type = params[:mongodb_type]
   service_action = params[:action]
@@ -82,33 +88,58 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     configserver = configserver_nodes.collect{|n| "#{n['fqdn']}:#{n['mongodb']['port']}" }.join(",")
   end
   
-  # default file
-  template "#{node['mongodb']['defaults_dir']}/#{name}" do
-    action :create
-    source "mongodb.default.erb"
-    group node['mongodb']['root_group']
-    owner "root"
-    mode "0644"
-    variables(
-      "daemon_path" => daemon,
-      "name" => name,
-      "config" => configfile,
-      "configdb" => configserver,
-      "port" => port,
-      "logpath" => logfile,
-      "dbpath" => dbpath,
-      "replicaset_name" => replicaset_name,
-      "configsrv" => false, #type == "configserver", this might change the port
-      "shardsrv" => false,  #type == "shard", dito.
-      "enable_rest" => params[:enable_rest]
-    )
-    notifies :restart, "service[#{name}]"
+  case node['platform']
+    when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
+      # init script
+      template "#{node['mongodb']['init_dir']}/#{name}" do
+        action :create
+        source "mongodb.init.erb"
+        group node['mongodb']['root_group']
+        owner "root"
+        mode "0755"
+        variables :provides => name
+        notifies :restart, "service[#{name}]"
+      end
+    else
+      # default file
+    template "#{node['mongodb']['defaults_dir']}/#{name}" do
+      action :create
+      source "mongodb.default.erb"
+      group node['mongodb']['root_group']
+      owner "root"
+      mode "0644"
+      variables(
+        "daemon_path" => daemon,
+        "name" => name,
+        "config" => configfile,
+        "configdb" => configserver,
+        "port" => port,
+        "logpath" => logfile,
+        "dbpath" => dbpath,
+        "replicaset_name" => replicaset_name,
+        "configsrv" => false, #type == "configserver", this might change the port
+        "shardsrv" => false,  #type == "shard", dito.
+        "enable_rest" => params[:enable_rest]
+      )
+      notifies :restart, "service[#{name}]"
+    end
+
+      # init script
+      template "#{node['mongodb']['init_dir']}/#{name}" do
+        action :create
+        source "mongodb.init.erb"
+        group node['mongodb']['root_group']
+        owner "root"
+        mode "0755"
+        variables :provides => name
+        notifies :restart, "service[#{name}]"
+      end
+
   end
-  
   # log dir [make sure it exists]
   directory logpath do
-    owner "mongodb"
-    group "mongodb"
+    owner node['mongodb']['user']
+    group node['mongodb']['group']
     mode "0755"
     action :create
     recursive true
@@ -117,25 +148,14 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
   if type != "mongos"
     # dbpath dir [make sure it exists]
     directory dbpath do
-      owner "mongodb"
-      group "mongodb"
+      owner node['mongodb']['user']
+      group node['mongodb']['group']
       mode "0755"
       action :create
       recursive true
     end
   end
-  
-  # init script
-  template "#{node['mongodb']['init_dir']}/#{name}" do
-    action :create
-    source "mongodb.init.erb"
-    group node['mongodb']['root_group']
-    owner "root"
-    mode "0755"
-    variables :provides => name
-    notifies :restart, "service[#{name}]"
-  end
-  
+
   # service
   service name do
     supports :status => true, :restart => true
@@ -147,7 +167,7 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
     if type == "mongos"
       notifies :create, "ruby_block[config_sharding]", :immediately
     end
-    if name == "mongodb"
+    if name == "mongodb" or name == "mongod"
       # we don't care about a running mongodb service in these cases, all we need is stopping it
       ignore_failure true
     end

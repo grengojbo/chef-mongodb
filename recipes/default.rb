@@ -25,11 +25,8 @@ case node['platform']
       action :install
     end
   when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
-    #  perl-MongoDB pymongo python-asyncmongo
     package "mongo-10gen mongo-10gen-server" do
-      action :update
-      #source "/var/tmp/#{rpm_file}"
-      #options "--nogpgcheck"
+      action :install
     end
 end
 
