@@ -25,7 +25,7 @@ case node['platform']
       action :install
     end
   when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
-    package "mongo-10gen mongo-10gen-server" do
+    package "mongo-10gen-server" do
       action :install
     end
 end

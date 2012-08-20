@@ -1,7 +1,7 @@
 # mongo.conf
 
 #where to log
-logpath=/var/log/mongo/mongod.log
+logpath=<%= @logpath ? "#{@logpath}\"" : "/var/log/mongo/mongod.log" %>
 
 logappend=true
 
@@ -9,8 +9,9 @@ logappend=true
 fork = true
 
 #port = 27017
+<%= @port ? "port =  #{@port}\"" : "" %>
 
-dbpath=/var/lib/mongo
+dbpath=<%= @dbpath ? "#{@dbpath}" : "/var/lib/mongo" %>
 
 # Disables write-ahead journaling
 # nojournal = true
