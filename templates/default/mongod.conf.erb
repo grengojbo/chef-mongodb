@@ -9,7 +9,7 @@ logappend=true
 fork = true
 
 #port = 27017
-<%= @port ? "port =  #{@port}\"" : "" %>
+<%= @port ? "port =  #{@port}\"" : "27017" %>
 
 dbpath=<%= @dbpath ? "#{@dbpath}" : "/var/lib/mongo" %>
 

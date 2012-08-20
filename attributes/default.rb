@@ -40,6 +40,8 @@ when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
   default[:mongodb][:root_group] = "root"
   default[:mongodb][:user] = "mongod"
   default[:mongodb][:group] = "mongod"
+  default[:mongodb][:logpath] = "/var/log/mongo/mongod.log"
+  default[:mongodb][:dbpath] = "/var/lib/mongo"
 else
   default[:mongodb][:defaults_dir] = "/etc/default"
   default[:mongodb][:init_dir] = "/etc/init.d"

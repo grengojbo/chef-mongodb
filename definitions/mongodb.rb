@@ -91,38 +91,42 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
   case node['platform']
     when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
       # init script
-      template "#{node['mongodb']['init_dir']}/#{name}" do
+      template "/etc/mongod.conf" do
         action :create
-        source "mongodb.init.erb"
+        source "mongod.conf.erb"
         group node['mongodb']['root_group']
         owner "root"
-        mode "0755"
-        variables :provides => name
+        mode "0644"
+        variables(
+                  "port" => port,
+                  "logpath" => node['mongodb']['logpath'],
+                  "dbpath" => node['mongodb']['dbpath']
+                )
         notifies :restart, "service[#{name}]"
       end
     else
       # default file
-    template "#{node['mongodb']['defaults_dir']}/#{name}" do
-      action :create
-      source "mongodb.default.erb"
-      group node['mongodb']['root_group']
-      owner "root"
-      mode "0644"
-      variables(
-        "daemon_path" => daemon,
-        "name" => name,
-        "config" => configfile,
-        "configdb" => configserver,
-        "port" => port,
-        "logpath" => logfile,
-        "dbpath" => dbpath,
-        "replicaset_name" => replicaset_name,
-        "configsrv" => false, #type == "configserver", this might change the port
-        "shardsrv" => false,  #type == "shard", dito.
-        "enable_rest" => params[:enable_rest]
-      )
-      notifies :restart, "service[#{name}]"
-    end
+      template "#{node['mongodb']['defaults_dir']}/#{name}" do
+        action :create
+        source "mongodb.default.erb"
+        group node['mongodb']['root_group']
+        owner "root"
+        mode "0644"
+        variables(
+          "daemon_path" => daemon,
+          "name" => name,
+          "config" => configfile,
+          "configdb" => configserver,
+          "port" => port,
+          "logpath" => logfile,
+          "dbpath" => dbpath,
+          "replicaset_name" => replicaset_name,
+          "configsrv" => false, #type == "configserver", this might change the port
+          "shardsrv" => false,  #type == "shard", dito.
+          "enable_rest" => params[:enable_rest]
+        )
+        notifies :restart, "service[#{name}]"
+      end
 
       # init script
       template "#{node['mongodb']['init_dir']}/#{name}" do
@@ -135,14 +139,14 @@ define :mongodb_instance, :mongodb_type => "mongod" , :action => [:enable, :star
         notifies :restart, "service[#{name}]"
       end
 
-  end
-  # log dir [make sure it exists]
-  directory logpath do
-    owner node['mongodb']['user']
-    group node['mongodb']['group']
-    mode "0755"
-    action :create
-    recursive true
+      # log dir [make sure it exists]
+      directory logpath do
+        owner node['mongodb']['user']
+        group node['mongodb']['group']
+        mode "0755"
+        action :create
+        recursive true
+      end
   end
   
   if type != "mongos"
