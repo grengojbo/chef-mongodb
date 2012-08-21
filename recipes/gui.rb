@@ -26,6 +26,8 @@ case node['platform']
     end
   when "redhat","oracle","centos","fedora","suse", "amazon", "scientific"
     #  perl-MongoDB pymongo python-asyncmongo
+    # wget https://github.com/downloads/Imaginea/mViewer/mViewer-v0.9.1.tar.gz
+    # cd /opt/mongo_gui/ && ./start_mViewer.sh <port>
     package "mongo-10gen" do
       action :update
       #source "/var/tmp/#{rpm_file}"
